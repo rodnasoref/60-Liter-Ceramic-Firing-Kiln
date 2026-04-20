@@ -1,0 +1,8 @@
+A Tools (Eszközök) menü beállításai
+Válaszd ki az ESP32S3 Dev Module-t, majd állítsd be a következőket: 
+Opció 						Érték
+Flash Size					16MB (128Mb)
+PSRAM						OPI PSRAM (ez felel meg a 8MB-os modulnak)
+Flash Mode					QIO 80MHz
+Partition Scheme				customs
+USB CDC On Boot					Enabled (ha a beépített USB-portot használod soros monitorhoz)

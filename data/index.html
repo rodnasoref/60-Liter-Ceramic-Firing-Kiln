@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KEMENCE | sTune Control</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/chart.min.js"></script>
+</head>
+<body>
+    <div class="wrapper">
+        <nav>
+            <div class="logo">🔥 KEMENCE <span>v1.0.0</span></div>
+        </nav>
+
+        <div class="main-grid">
+            <div class="col">
+                <div class="card stat-card">
+                    <div class="label">AKTUÁLIS HŐMÉRSÉKLET</div>
+                    <div class="value" id="cur-temp">0.0°C</div>
+                    <div class="sub-value">Belső: <span id="int-temp">0.0</span>°C</div>
+                    <div id="status-tag" class="tag">Betöltés...</div>
+                </div>
+
+                <div class="card chart-container">
+                    <canvas id="tempChart"></canvas>
+                </div>
+
+                <div class="card pid-card">
+                    <div class="pid-grid">
+                        <div>P: <b id="kp">0</b></div>
+                        <div>I: <b id="ki">0</b></div>
+                        <div>D: <b id="kd">0</b></div>
+                    </div>
+                    <div class="bvi-box">Várható befejezés: <span id="bvi-time">--:--:--</span></div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="card ctrl-card">
+                    <h3>Vezérlés</h3>
+                    <div class="pwm-gauge">
+                        <div id="pwm-fill" class="pwm-fill"></div>
+                        <span id="pwm-text">0% kimenet</span>
+                    </div>
+                    <div class="btn-row">
+                        <button onclick="control('start')" class="btn btn-start">INDÍTÁS</button>
+                        <button onclick="control('stop')" class="btn btn-stop">STOP</button>
+                    </div>
+                </div>
+
+                <div class="card config-card">
+                    <h3>NVS Beállítások</h3>
+                    <div class="form-grid">
+                        <div class="field"><label>Célhőfok (°C)</label><input type="number" id="inputSpan"></div>
+                        <div class="field"><label>Vészlimit (°C)</label><input type="number" id="tempLimit" class="danger-input"></div>
+                        <div class="field"><label>Tesztidő (s)</label><input type="number" id="testTimeSec"></div>
+                        <div class="field"><label>PWM Löket</label><input type="number" id="outputStep"></div>
+                        <div class="field"><label>Settle (s)</label><input type="number" id="settleTime"></div>
+                        <div class="field"><label>Mintavétel</label><input type="number" id="samples"></div>
+                        <div class="field full"><label>Adatnaplózás <input type="checkbox" id="loggingEnabled"></label></div>
+                    </div>
+                    <button onclick="saveConfig()" class="btn btn-save">MENTÉS ÉS FRISSÍTÉS</button>
+                </div>
+
+                <div class="footer-btns">
+                    <button onclick="syncTime()" class="btn-alt">🕒 Idő szinkron</button>
+                    <a href="/logs" class="btn-alt">📂 Log fájlok</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart;
+        function initChart() {
+            const ctx = document.getElementById('tempChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Hőmérséklet', data: [], borderColor: '#ff4757', borderWidth: 2, fill: true, backgroundColor: 'rgba(255, 71, 87, 0.1)', tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#333' } }, x: { grid: { display: false } } } }
+            });
+        }
+
+        async function refresh() {
+            const r = await fetch('/api/data');
+            const d = await r.json();
+            document.getElementById('cur-temp').innerText = d.temp.toFixed(1) + "°C";
+            document.getElementById('int-temp').innerText = d.internalTemp.toFixed(1);
+            document.getElementById('status-tag').innerText = d.status;
+            document.getElementById('pwm-fill').style.width = d.output + "%";
+            document.getElementById('pwm-text').innerText = d.output.toFixed(0) + "% kimenet";
+            document.getElementById('kp').innerText = d.kp;
+            document.getElementById('ki').innerText = d.ki;
+            document.getElementById('kd').innerText = d.kd;
+            document.getElementById('bvi-time').innerText = d.bvi;
+            
+            if(!document.activeElement.tagName.includes("INPUT")) {
+                document.getElementById('inputSpan').value = d.config.inputSpan;
+                document.getElementById('tempLimit').value = d.config.tempLimit;
+                document.getElementById('testTimeSec').value = d.config.testTimeSec;
+                document.getElementById('outputStep').value = d.config.outputStep;
+                document.getElementById('settleTime').value = d.config.settleTime;
+                document.getElementById('samples').value = d.config.samples;
+                document.getElementById('loggingEnabled').checked = d.config.loggingEnabled;
+            }
+        }
+
+        async function updateGraph() {
+            const r = await fetch('/api/history');
+            const d = await r.json();
+            chart.data.labels = d.labels.map(l => {
+                let s = l % 60; let m = Math.floor(l / 60) % 60;
+                return `${m}:${s < 10 ? '0' : ''}${s}`;
+            });
+            chart.data.datasets[0].data = d.values;
+            chart.update('none');
+        }
+
+        function control(a) { fetch('/api/control?action=' + a); }
+        function syncTime() { fetch('/api/sync?epoch=' + Math.floor(Date.now()/1000)); alert("Idő szinkronizálva!"); }
+        
+        function saveConfig() {
+            const cfg = {
+                inputSpan: parseFloat(document.getElementById('inputSpan').value),
+                tempLimit: parseFloat(document.getElementById('tempLimit').value),
+                testTimeSec: parseInt(document.getElementById('testTimeSec').value),
+                outputStep: parseFloat(document.getElementById('outputStep').value),
+                settleTime: parseInt(document.getElementById('settleTime').value),
+                samples: parseInt(document.getElementById('samples').value),
+                loggingEnabled: document.getElementById('loggingEnabled').checked
+            };
+            fetch('/api/save', { method: 'POST', body: JSON.stringify(cfg) }).then(() => alert("Beállítások mentve az NVS-be!"));
+        }
+
+        initChart();
+        setInterval(refresh, 1000);
+        setInterval(updateGraph, 5000);
+    </script>
+</body>
+</html>

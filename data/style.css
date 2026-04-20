@@ -1,0 +1,41 @@
+:root {
+    --bg: #0f0f17; --card: #1e1e2e; --accent: #ff4757;
+    --green: #2ed573; --blue: #1e90ff; --text: #f1f1f1;
+}
+body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
+.wrapper { max-width: 1000px; margin: auto; }
+nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+.logo { font-weight: bold; font-size: 1.2rem; }
+.logo span { font-weight: normal; color: #777; font-size: 0.8rem; }
+
+.main-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; }
+@media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
+
+.card { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); margin-bottom: 20px; }
+.stat-card { text-align: center; }
+.label { font-size: 0.8rem; color: #888; letter-spacing: 1px; }
+.value { font-size: 4rem; font-weight: bold; color: var(--accent); margin: 10px 0; }
+.tag { display: inline-block; background: #333; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; }
+
+.chart-container { height: 300px; }
+
+.pwm-gauge { background: #111; height: 35px; border-radius: 8px; position: relative; overflow: hidden; margin: 15px 0; border: 1px solid #333; }
+.pwm-fill { background: linear-gradient(90deg, #1e90ff, #2ed573); height: 100%; transition: width 0.8s ease; }
+#pwm-text { position: absolute; width: 100%; text-align: center; top: 7px; font-weight: bold; font-size: 0.9rem; text-shadow: 1px 1px 2px #000; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field { display: flex; flex-direction: column; font-size: 0.8rem; }
+.field label { margin-bottom: 4px; color: #aaa; }
+input { background: #111; border: 1px solid #444; color: #fff; padding: 8px; border-radius: 5px; outline: none; }
+input:focus { border-color: var(--blue); }
+.danger-input { border-color: #511; color: var(--accent); }
+
+.btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+.btn-start { background: var(--green); color: #000; }
+.btn-stop { background: var(--accent); color: #fff; }
+.btn-save { background: var(--blue); color: #fff; }
+.btn:active { transform: scale(0.98); }
+
+.btn-alt { background: transparent; border: 1px solid #444; color: #aaa; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 0.8rem; margin-right: 10px; cursor: pointer; }
+.pid-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px; }
+.bvi-box { font-size: 0.8rem; color: #888; text-align: center; }
