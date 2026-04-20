@@ -213,6 +213,7 @@ void SaveNVS(const char* reason){
         if (digitalRead(bootButtonPin) == LOW) break; // Tényleg le van nyomva
         updateDisplayaktido(); 
         updateDisplayTCcj();
+        server.handleClient();
       }
       esp_task_wdt_reset();
     }
