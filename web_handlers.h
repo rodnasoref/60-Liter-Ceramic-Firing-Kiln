@@ -75,7 +75,7 @@ void handleApiData() {
     // A kimenet százalékát csak akkor számoljuk, ha valóban fut a folyamat
     float outputPercent = 0;
     if (tuningStarted) {
-        float outputPercent = (config.outputSpan > 0) ? (Output / config.outputSpan * 100.0) : 0;
+        outputPercent = (config.outputSpan > 0) ? (Output / config.outputSpan * 100.0) : 0;
     }
     doc["output"] = outputPercent;
     
